@@ -102,7 +102,7 @@ const books = [
         "language": "English",
         "coverImageURL": "https://m.media-amazon.com/images/I/71V0df6wu+L.jpg",
         "rating": 4.7,
-        "sold": 250
+        "sold": 250,
     }
 ]
 

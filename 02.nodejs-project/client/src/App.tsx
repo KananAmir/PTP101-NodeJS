@@ -60,10 +60,11 @@ function App() {
     }
   }
 
-  const fetchBooks = async () => {
+  const fetchBooks = async (params: string = '') => {
+    const [sort, order] = params.split('-')
     try {
       setLoading(true)
-      const response = await axios(`${BASE_URL}/books`)
+      const response = await axios(`${BASE_URL}/books?sort=${sort}&order=${order}`)
       console.log(response.data);
       setBooks(response.data.data)
 
@@ -119,6 +120,15 @@ function App() {
       <div>
         {/* <input type="search" name="search" id="search" placeholder="Search books..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} /> */}
         <input type="search" name="search" id="search" placeholder="Search books..." onChange={handleSearch} />
+        <select name="sort" id="sort" onChange={(e)=>{
+          const value = e.target.value
+          fetchBooks(value)
+        }}>
+          <option value="title-asc">Sort by Title Asc</option>
+          <option value="title-desc">Sort by Title Desc</option>
+          <option value="price-asc">Sort by Price Asc</option>
+          <option value="price-desc">Sort by Price Desc</option>
+        </select>
       </div>
       {books.length === 0 ? <p style={{
         color: 'red'

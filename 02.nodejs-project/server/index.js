@@ -23,10 +23,25 @@ app.get('/api/books', (req, res) => {
   try {
     console.log('query', req.query);
 
-    const { search = '' } = req.query
+    const { search = '', sort, order = 'asc' } = req.query
 
     let filteredBooks = books.filter((book) => book.title.toLocaleLowerCase().includes(search.toLocaleLowerCase())
       || book.author.toLocaleLowerCase().includes(search.toLocaleLowerCase()))
+
+
+    if (sort) {
+      filteredBooks = filteredBooks.sort((a, b) => {
+        if (typeof a[sort] === 'string') {
+          return order === 'asc' ? a[sort].toLocaleLowerCase().localeCompare(b[sort].toLocaleLowerCase()) : b[sort].toLocaleLowerCase().localeCompare(a[sort].toLocaleLowerCase())
+        } else {
+          return order === 'asc' ? a[sort] - b[sort] : b[sort] - a[sort]
+        }
+      })
+    }
+
+
+    console.log(filteredBooks, 'filteredBooks');
+    
 
     res.status(200).json({
       data: filteredBooks,

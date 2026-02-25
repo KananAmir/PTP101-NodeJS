@@ -6,7 +6,7 @@ const port = 8080
 
 
 const corsOptions = {
-  origin: 'http://localhost:5173',
+  origin: ['http://localhost:5173', 'https://beautiful-paletas-ea602e.netlify.app'],
   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
   methods: 'GET, POST, PUT, PATCH, DELETE',
   allowedHeaders: 'Content-Type, Authorization',

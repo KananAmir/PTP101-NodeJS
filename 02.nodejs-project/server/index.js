@@ -23,7 +23,7 @@ app.get('/api/books', (req, res) => {
   try {
     console.log('query', req.query);
 
-    const { search = '', sort, order = 'asc' } = req.query
+    const { search = '', sort, order = 'asc', page = 1, limit = 10 } = req.query
 
     let filteredBooks = books.filter((book) => book.title.toLocaleLowerCase().includes(search.toLocaleLowerCase())
       || book.author.toLocaleLowerCase().includes(search.toLocaleLowerCase()))
@@ -40,14 +40,28 @@ app.get('/api/books', (req, res) => {
     }
 
 
-    console.log(filteredBooks, 'filteredBooks');
+    // console.log(filteredBooks.length, 'filteredBooks length');
+ 
+    const startIndex = (page - 1) * limit
+    const endIndex = startIndex + Number(limit)
+
+   const paginatedBooks = filteredBooks.slice(startIndex, endIndex)
+
+  //  console.log(filteredBooks.length);
+   
     
 
     res.status(200).json({
-      data: filteredBooks,
+      data: paginatedBooks,
       message: 'Books retrieved successfully',
       success: true,
-      error: null
+      error: null,
+      pagination: {
+        page: Number(page),
+        limit: Number(limit),
+        total: filteredBooks.length,
+        totalPages: Math.ceil(filteredBooks.length / limit)
+      }
     })
   } catch (error) {
     res.status(500).json({
@@ -133,13 +147,13 @@ app.post('/api/books', (req, res) => {
       ...req.body
     }
 
-    const updatedBooks = [...books, newBook]
-    // books.push(newBook)
+    books.push(newBook)
 
+    
     res.status(201).json({
       message: 'Book created successfully',
       book: newBook,
-      updatedBooks: updatedBooks
+      updatedBooks: books
     })
 
   } catch (error) {
@@ -268,3 +282,4 @@ app.patch('/api/books/:id', (req, res) => {
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}, url: http://localhost:${port}`);
 })
+

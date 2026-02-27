@@ -39,10 +39,9 @@ app.get('/api/books', (req, res) => {
       })
     }
 
-
     // console.log(filteredBooks.length, 'filteredBooks length');
  
-    const startIndex = (page - 1) * limit
+    const startIndex = (Number(page) - 1) * limit
     const endIndex = startIndex + Number(limit)
 
    const paginatedBooks = filteredBooks.slice(startIndex, endIndex)

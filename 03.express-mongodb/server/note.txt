@@ -1,0 +1,6 @@
+sql - structred query language
+nosql - non-structred query language (mongodb)
+
+
+cluster -> collection -> document -> field
+

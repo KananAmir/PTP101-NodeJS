@@ -1,4 +1,6 @@
 const express = require('express')
+const cors = require('cors')
+const rateLimit = require("express-rate-limit");
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 require('dotenv').config()
@@ -6,6 +8,65 @@ require('dotenv').config()
 const app = express()
 const port = 8080
 
+const corsOptions = {
+    origin: ['http://localhost:3000'],
+    optionsSuccessStatus: 200
+}
+
+
+// Login endpoint üçün limiter
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 dəqiqə
+  max: 5,                    // Maksimum 5 sorğu
+  message: "Çox sayda cəhd etdiniz. 15 dəqiqə sonra yenidən yoxlayın."
+});
+
+// global API limiter
+const apiLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 dəqiqə
+  max: 10                  // Hər IP 1 dəqiqədə 100 request edə bilər
+});
+
+
+// middleware
+
+// logger middleware
+const logger = (req, res, next) => {
+    console.log(`${req.method} - ${req.url}`);
+    next()
+}
+
+// book validator middleware
+const bookValidator = (req, res, next) => {
+
+    const { title, description, price, author, stock, genre, language, coverImageURL } = req.body
+    if (!title || !description || !price || !author || !stock || !genre || !language || !coverImageURL) {
+        return res.status(400).json({
+            message: 'All fields are required',
+            success: false
+        })
+    }
+
+    next()
+}
+
+// global error handler
+function errorHandler(err, req, res, next) {
+    console.error(err.stack);
+    res.status(500).json({ message:  err.message, success: false });
+}
+
+ 
+app.use(cors(corsOptions))
+
+app.use(apiLimiter) // global API limiter
+app.use(logger) // global middleware
+
+app.use("/auth/login", loginLimiter);
+
+app.post("/auth/login", (req, res) => {
+  res.send("Login attempt");
+});
 
 app.get('/', (req, res) => {
     res.send('Hello World!')
@@ -66,12 +127,12 @@ const bookSchema = new mongoose.Schema(
     },
     { timestamps: true, versionKey: false }
 );
-
+``
 const BookModel = mongoose.model('Book', bookSchema)
 
 
 //get all books
-app.get('/api/books', async (req, res) => {
+app.get('/api/books', async (req, res, next) => {
     try {
         const books = await BookModel.find({})
 
@@ -82,15 +143,12 @@ app.get('/api/books', async (req, res) => {
 
 
     } catch (error) {
-        res.status(500).json({
-            message: error.message,
-            success: false
-        })
+        next(error)
     }
 })
 
 //get book by id
-app.get('/api/books/:id', async (req, res) => {
+app.get('/api/books/:id', async (req, res, next) => {
     try {
         const { id } = req.params
         const book = await BookModel.findById(id)
@@ -107,10 +165,7 @@ app.get('/api/books/:id', async (req, res) => {
             data: book
         })
     } catch (error) {
-        res.status(500).json({
-            message: error.message,
-            success: false
-        })
+      next(error)
     }
 })
 
@@ -143,19 +198,13 @@ app.delete('/api/books/:id', async (req, res) => {
 })
 
 // create new book
-app.post('/api/books', async (req, res) => {
-    // console.log(req.body);
+app.post('/api/books', bookValidator, async (req, res) => {
+    // console.log(req.body); 
 
     try {
-        const { title, description, price, author, stock, genre, language, coverImageURL } = req.body
-        if (!title || !description || !price || !author || !stock || !genre || !language || !coverImageURL) {
-            return res.status(400).json({
-                message: 'All fields are required',
-                success: false
-            })
-        }
+
         const newBook = new BookModel({
-            ...req.body
+           ...req.body
         })
 
         await newBook.save()
@@ -174,20 +223,11 @@ app.post('/api/books', async (req, res) => {
 })
 
 // update book
-app.put('/api/books/:id', async (req, res) => {
+app.put('/api/books/:id', bookValidator, async (req, res) => {
     try {
         const { id } = req.params
 
-        const { title, description, price, author, stock, genre, language, coverImageURL } = req.body
-
-        if (!title || !description || !price || !author || !stock || !genre || !language || !coverImageURL) {
-            return res.status(400).json({
-                message: 'All fields are required',
-                success: false
-            })
-        }
-
-        const updatedBook = await BookModel.findByIdAndUpdate(id, { ...req.body }, { new: true})
+        const updatedBook = await BookModel.findByIdAndUpdate(id, { ...req.body }, { new: true })
 
         if (!updatedBook) {
             return res.status(404).json({
@@ -209,10 +249,13 @@ app.put('/api/books/:id', async (req, res) => {
     }
 })
 
+app.use(errorHandler);
+
+
 const PW = process.env.PASSWORD
 const DB_URL = process.env.DB_URL
 
- 
+
 mongoose.connect(DB_URL.replace('<db_password>', PW))
     .then(() => console.log('Connected!'))
     .catch((err) => console.log(err))

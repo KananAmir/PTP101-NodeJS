@@ -3,13 +3,32 @@ const BookModel = require('../models/bookModel')
 const bookController = {
     getAllBooks: async (req, res) => {
         try {
-            const books = await BookModel.find({})
+
+            const { title, author, genreId, sort, orderBy = 'asc' } = req.query
+
+
+            const filter = {}
+
+            if (title) {
+                filter.title = { $regex: title, $options: 'i' }
+            }
+
+            if (author) {
+                filter.author = { $regex: author, $options: 'i' }
+            }
+
+            if (genreId) {
+                filter.genre = genreId
+            }
+
+            const books = await BookModel.find(filter)
+                .populate('genre', 'name')
+                .sort({ [sort]: orderBy === 'desc' ? -1 : 1 })
 
             res.status(200).json({
                 message: 'Success',
                 data: books
             })
-
 
         } catch (error) {
             res.status(500).json({

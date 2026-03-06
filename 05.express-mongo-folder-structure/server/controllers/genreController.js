@@ -1,5 +1,5 @@
 const GenreModel = require('../models/genreModel')
-
+const BookModel = require('../models/bookModel')
 const genreController = {
     getAllGenres: async (req, res) => {
         try {
@@ -35,6 +35,22 @@ const genreController = {
                 data: genre
             })
         } catch (error) {
+            res.status(500).json({
+                message: error.message,
+                success: false
+            })
+        }
+    },
+    getBooksByGenreId: async (req, res) => {
+        try {
+            const { genreId } = req.params
+            const books = await BookModel.find({ genre: genreId }).populate('genre', 'name')
+            res.status(200).json({
+                message: 'Success',
+                data: books
+            })
+        }
+        catch (error) {
             res.status(500).json({
                 message: error.message,
                 success: false

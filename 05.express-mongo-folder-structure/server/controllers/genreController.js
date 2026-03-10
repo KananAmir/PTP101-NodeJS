@@ -61,6 +61,19 @@ const genreController = {
         try {
             const { id } = req.params
             const deletedGenre = await GenreModel.findByIdAndDelete(id)
+            await BookModel.deleteMany({
+                genre: {
+                    _id: id
+                }
+            })
+
+            // await BookModel.updateMany(
+            //     { genre: {
+            //         _id: id
+            //     }},
+            //     { $unset: { genre: "" } } // genre sahəsini silmək üçün $unset operatoru istifadə olunur
+            // )
+
             const genres = await GenreModel.find({})
 
             if (!deletedGenre) {

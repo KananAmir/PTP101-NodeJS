@@ -8,6 +8,7 @@ router.get('/:id', bookController.getBookById )
 router.delete('/:id', bookController.deleteBookById )
 router.post('/', bookValidator, bookController.addNewBook ) 
 router.put('/:id', bookValidator, bookController.updateBookById ) 
+router.post('/discount/:genreId', bookController.addDiscount)
 
 
 module.exports = router

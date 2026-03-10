@@ -4,7 +4,7 @@ const connectDB = require('./config')
 const bookRoute = require('./routes/bookRoute')
 const genreRoute = require('./routes/genreRoute')
 const rateLimit = require("express-rate-limit");
-
+const logger = require('./middlewares/logger')
 require('dotenv').config()
 
 const app = express()
@@ -30,13 +30,6 @@ const apiLimiter = rateLimit({
 });
 
 
-// middleware
-
-// logger middleware
-const logger = (req, res, next) => {
-    console.log(`${req.method} - ${req.url}`);
-    next()
-}
 
 // global error handler
 function errorHandler(err, req, res, next) {

@@ -4,7 +4,7 @@ const bookController = {
     getAllBooks: async (req, res) => {
         try {
 
-            const { title, author, genreId, sort, orderBy = 'asc' } = req.query
+            const { title, author, genreId, sort, orderBy = 'asc', page, limit } = req.query
 
 
             const filter = {}
@@ -21,13 +21,22 @@ const bookController = {
                 filter.genre = genreId
             }
 
+            const totalBooks = await BookModel.countDocuments(filter)
+
+
             const books = await BookModel.find(filter)
                 .populate('genre', 'name')
                 .sort({ [sort]: orderBy === 'desc' ? -1 : 1 })
+                .skip((page - 1) * limit)
+                .limit(Number(limit))
 
             res.status(200).json({
                 message: 'Success',
-                data: books
+                data: books,
+                total: totalBooks,
+                page: Number(page),
+                limit: Number(limit),
+                totalPages: Math.ceil(totalBooks / limit)
             })
 
         } catch (error) {
@@ -133,9 +142,39 @@ const bookController = {
                 success: false
             })
         }
+    },
+    addDiscount: async (req, res) => {
+        try {
+            const { genreId } = req.params
+            const { discount } = req.body
+            await BookModel.updateMany({ genre: {
+                _id: genreId
+            }},
+                { $set: { discount: 10 } })
+
+            res.status(200).json({
+                message: 'Discount added successfully'
+            })
+        }
+        catch (error) {
+            res.status(500).json({
+                message: error.message,
+                success: false
+            })
+        }
     }
 }
 
 
 
 module.exports = bookController
+
+
+
+// total: 100
+// limit: 10
+
+// page: 1 -> 1-10
+// page: 2 -> 11-20
+// page: 3 -> 21-30
+// page: 4 -> 31-40

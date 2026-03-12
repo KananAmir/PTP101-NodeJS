@@ -99,9 +99,14 @@ const bookController = {
         // console.log(req.body); 
 
         try {
-
+            console.log(req.file);
+            
+            const imageUrl = `http://localhost:8080/uploads/${req.file.filename}`
+            console.log(imageUrl);
+            
             const newBook = new BookModel({
-                ...req.body
+                ...req.body,
+                coverImageURL: imageUrl
             })
 
             await newBook.save()

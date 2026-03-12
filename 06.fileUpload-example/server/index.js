@@ -7,9 +7,8 @@ const rateLimit = require("express-rate-limit");
 const logger = require('./middlewares/logger')
 require('dotenv').config()
 const path = require('path')
-const multer = require('multer')
-
-
+const uploadBookImage = require('./middlewares/multerMiddleware')
+const errorHandling = require('./middlewares/errorHandling')
 
 const app = express()
 const port = process.env.PORT || 8080
@@ -18,7 +17,6 @@ const corsOptions = {
   origin: ['http://localhost:5173'],
   optionsSuccessStatus: 200
 }
-
 
 // Login endpoint üçün limiter
 const loginLimiter = rateLimit({
@@ -45,7 +43,7 @@ app.use(express.json()) // for parsing application/json
 // app.use(express.static("uploads")) // for serving static files from uploads folder
 // app.use('/static', express.static('uploads')) // for serving static files from uploads folder with /static prefix
 
-app.use('/static', express.static(path.join(__dirname, 'uploads'))) // for serving static files from uploads folder with /static prefix
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'))) // for serving static files from uploads folder with /static prefix
 
 
 
@@ -54,64 +52,27 @@ app.use('/static', express.static(path.join(__dirname, 'uploads'))) // for servi
 
 // const upload = multer({ dest: 'uploads/' })
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/')
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname)
-  }
-})
-
-const upload = multer({
-  storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
-})
 
 
 // 1MB = 1024 KB
 // 1KB = 1024 bytes
 
 
-app.post('/api/imageUpload', upload.single('imageUrl'), (req, res, next) => {
-  try {
-    console.log('file', req.file);
+app.post('/api/imageUpload', uploadBookImage.single('imageUrl'), (req, res, next) => {
+  
     res.status(200).json({
       message: 'Image uploaded successfully',
       success: true,
       error: null,
     })
-  } catch (error) {
-    console.log(error.message);
-    res.status(500).json({
-      message: 'Error uploading image',
-      success: false,
-      error: error.message,
-    })
-  }
+
 })
 
-app.use((err, req, res, next) => {
 
-  if (err instanceof multer.MulterError) {
-    return res.status(400).json({
-      success: false,
-      message: "Multer error",
-      error: err.message
-    })
-  }
-
-  if (err) {
-    return res.status(500).json({
-      success: false,
-      message: err.message
-    })
-  }
-
-  next()
-})
 app.use('/api/books', bookRoute) // book route
 app.use('/api/genres', genreRoute) // genre route
+
+app.use(errorHandling)
 
 
 app.listen(port, () => {

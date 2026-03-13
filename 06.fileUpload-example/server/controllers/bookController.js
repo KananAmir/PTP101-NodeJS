@@ -1,4 +1,5 @@
 const BookModel = require('../models/bookModel')
+const cloudinary = require("cloudinary").v2;
 
 const bookController = {
     getAllBooks: async (req, res) => {
@@ -72,7 +73,9 @@ const bookController = {
     deleteBookById: async (req, res) => {
         try {
             const { id } = req.params
+
             const deletedBook = await BookModel.findByIdAndDelete(id)
+            await cloudinary.uploader.destroy(deletedBook.public_id)
             const books = await BookModel.find({})
 
             if (!deletedBook) {
@@ -100,13 +103,15 @@ const bookController = {
 
         try {
             console.log(req.file);
-            
-            const imageUrl = `http://localhost:8080/uploads/${req.file.filename}`
+
+            // const imageUrl = `http://localhost:8080/uploads/${req.file.filename}`
+            const imageUrl = req.file.path
             console.log(imageUrl);
-            
+
             const newBook = new BookModel({
                 ...req.body,
-                coverImageURL: imageUrl
+                coverImageURL: imageUrl,
+                public_id: req.file.filename
             })
 
             await newBook.save()
@@ -127,14 +132,31 @@ const bookController = {
         try {
             const { id } = req.params
 
-            const updatedBook = await BookModel.findByIdAndUpdate(id, { ...req.body }, { new: true })
+            const book = await BookModel.findById(req.params.id)
 
-            if (!updatedBook) {
-                return res.status(404).json({
-                    message: 'Book not found',
-                    success: false
-                })
+            if (!book) {
+                return res.status(404).json({ message: "Book not found" })
             }
+            let updatedData = { ...req.body }
+            if (req.file) {
+
+                await cloudinary.uploader.destroy(book.public_id)
+
+                updatedData.coverImageURL = req.file.path
+                updatedData.public_id = req.file.filename
+
+            }
+
+            const updatedBook = await BookModel.findByIdAndUpdate(id, updatedData, { new: true })
+
+
+
+            // if (!updatedBook) {
+            //     return res.status(404).json({
+            //         message: 'Book not found',
+            //         success: false
+            //     })
+            // }
 
             res.status(200).json({
                 message: 'Book updated successfully',
@@ -152,9 +174,11 @@ const bookController = {
         try {
             const { genreId } = req.params
             const { discount } = req.body
-            await BookModel.updateMany({ genre: {
-                _id: genreId
-            }},
+            await BookModel.updateMany({
+                genre: {
+                    _id: genreId
+                }
+            },
                 { $set: { discount: 10 } })
 
             res.status(200).json({

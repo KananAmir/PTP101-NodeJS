@@ -28,7 +28,7 @@ const loginLimiter = rateLimit({
 // global API limiter
 const apiLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 dəqiqə
-  max: 10                  // Hər IP 1 dəqiqədə 100 request edə bilər
+  max: 100                  // Hər IP 1 dəqiqədə 100 request edə bilər
 });
 
 

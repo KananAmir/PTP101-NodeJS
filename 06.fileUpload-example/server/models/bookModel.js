@@ -55,7 +55,8 @@ const bookSchema = new mongoose.Schema(
             type: Number,
             min: 0,
             default: 0
-        }
+        },
+        public_id: String
     },
     { timestamps: true, versionKey: false }
 );

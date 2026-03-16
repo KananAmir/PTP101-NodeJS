@@ -1,0 +1,151 @@
+const GenreModel = require('../models/genreModel')
+const BookModel = require('../models/bookModel')
+const genreController = {
+    getAllGenres: async (req, res) => {
+        try {
+            const genres = await GenreModel.find({})
+
+            res.status(200).json({
+                message: 'Success',
+                data: genres
+            })
+
+
+        } catch (error) {
+            res.status(500).json({
+                message: error.message,
+                success: false
+            })
+        }
+    },
+    getGenreById: async (req, res) => {
+        try {
+            const { id } = req.params
+            const genre = await GenreModel.findById(id)
+
+            if (!genre) {
+                return res.status(404).json({
+                    message: 'Genre not found',
+                    success: false
+                })
+            }
+
+            res.status(200).json({
+                message: 'Success',
+                data: genre
+            })
+        } catch (error) {
+            res.status(500).json({
+                message: error.message,
+                success: false
+            })
+        }
+    },
+    getBooksByGenreId: async (req, res) => {
+        try {
+            const { genreId } = req.params
+            const books = await BookModel.find({ genre: genreId }).populate('genre', 'name')
+            res.status(200).json({
+                message: 'Success',
+                data: books
+            })
+        }
+        catch (error) {
+            res.status(500).json({
+                message: error.message,
+                success: false
+            })
+        }
+    },
+    deleteGenreById: async (req, res) => {
+        try {
+            const { id } = req.params
+            const deletedGenre = await GenreModel.findByIdAndDelete(id)
+            await BookModel.deleteMany({
+                genre: {
+                    _id: id
+                }
+            })
+
+            // await BookModel.updateMany(
+            //     { genre: {
+            //         _id: id
+            //     }},
+            //     { $unset: { genre: "" } } // genre sahəsini silmək üçün $unset operatoru istifadə olunur
+            // )
+
+            const genres = await GenreModel.find({})
+
+            if (!deletedGenre) {
+                return res.status(404).json({
+                    message: 'Genre not found or already deleted',
+                    success: false
+                })
+            }
+
+            res.status(200).json({
+                message: 'Genre deleted successfully',
+                data: deletedGenre,
+                allGenres: genres
+            })
+
+        } catch (error) {
+            res.status(500).json({
+                message: error.message,
+                success: false
+            })
+        }
+    },
+    addNewGenre: async (req, res) => {
+        // console.log(req.body); 
+
+        try {
+
+            const newGenre = new GenreModel({
+                ...req.body
+            })
+
+            await newGenre.save()
+
+            res.status(201).json({
+                message: 'Genre created successfully',
+                data: newGenre
+            })
+
+        } catch (error) {
+            res.status(500).json({
+                message: error.message,
+                success: false
+            })
+        }
+    },
+    updateGenreById: async (req, res) => {
+        try {
+            const { id } = req.params
+
+            const updatedGenre = await GenreModel.findByIdAndUpdate(id, { ...req.body }, { new: true })
+
+            if (!updatedGenre) {
+                return res.status(404).json({
+                    message: 'Genre not found',
+                    success: false
+                })
+            }
+
+            res.status(200).json({
+                message: 'Genre updated successfully',
+                data: updatedGenre
+            })
+
+        } catch (error) {
+            res.status(500).json({
+                message: error.message,
+                success: false
+            })
+        }
+    }
+}
+
+
+
+module.exports = genreController

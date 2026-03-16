@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const bookController = require('../controllers/bookController')
-const bookValidator = require('../middlewares/bookValidator')
+const bookValidator = require('../middlewares/validateBook')
 // const uploadBookImage = require('../middlewares/multerMiddleware')
 const uploadBookImage = require('../middlewares/uploadBookImage')
 

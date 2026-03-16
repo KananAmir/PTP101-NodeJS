@@ -1,6 +1,5 @@
 const BookModel = require('../models/bookModel')
 const cloudinary = require("cloudinary").v2;
-
 const bookController = {
     getAllBooks: async (req, res) => {
         try {
@@ -102,7 +101,7 @@ const bookController = {
         // console.log(req.body); 
 
         try {
-            console.log(req.file);
+            // console.log(req.file);
 
             // const imageUrl = `http://localhost:8080/uploads/${req.file.filename}`
             const imageUrl = req.file.path

@@ -16,6 +16,11 @@ const userSchema = new mongoose.Schema(
         password: {
             type: String,
             required: true,
+        },
+        role: {
+            type: String,
+            default: 'user',
+            enum: ['user', 'admin']
         }
     },
     { timestamps: true, versionKey: false }
@@ -24,3 +29,4 @@ const userSchema = new mongoose.Schema(
 const UserModel = mongoose.model('User', userSchema)
 
 module.exports = UserModel
+

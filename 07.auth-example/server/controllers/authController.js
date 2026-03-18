@@ -10,6 +10,12 @@ const register = async (req, res) => {
     try {
         const { username, password, email } = req.body
 
+        if (!username || !password || !email) {
+            return res.status(400).json({
+                message: 'Username, password and email are required'
+            })
+        }
+
         const existingUser = await UserModel.findOne({ email: email })
 
         console.log(existingUser);
@@ -48,12 +54,19 @@ const register = async (req, res) => {
 }
 const login = async (req, res) => {
     try {
-        const { email, password } = req.body
-        const user = await UserModel.findOne({ email: email })
+        const { emailOrUsername, password } = req.body
+
+        if (!emailOrUsername || !password) {
+            return res.status(400).json({
+                message: 'Email/Username and password are required'
+            })
+        }
+
+        const user = await UserModel.findOne({ email: emailOrUsername }) || await UserModel.findOne({ username: emailOrUsername })
 
         if (!user) {
             return res.status(400).json({
-                message: 'Invalid email! or password'
+                message: 'Invalid email/username or password'
             })
         }
 
@@ -62,7 +75,7 @@ const login = async (req, res) => {
 
         if (!isPasswordValid) {
             return res.status(400).json({
-                message: 'Invalid email! or password'
+                message: 'Invalid email/username or password'
             })
         }
 

@@ -3,20 +3,6 @@ const cloudinary = require("cloudinary").v2;
 const bookController = {
     getAllBooks: async (req, res) => {
         try {
-
-            const requestHeader = req.headers.authorization
-
-            const token = requestHeader?.split(' ')[1]
-
-            console.log(token);
-
-            if (!token) {
-                return res.status(401).json({
-                    message: 'Unauthorized'
-                })
-
-            }
-
             const { title, author, genreId, sort, orderBy = 'asc', page, limit } = req.query
 
 
@@ -219,3 +205,4 @@ module.exports = bookController
 // page: 2 -> 11-20
 // page: 3 -> 21-30
 // page: 4 -> 31-40
+

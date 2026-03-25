@@ -1,7 +1,8 @@
 const UserModel = require('../models/userModel')
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-
+const sendVerificationEmail = require('../utils/sendEmail')
+const crypto = require('crypto')
 
 require('dotenv').config()
 
@@ -30,16 +31,25 @@ const register = async (req, res) => {
 
         // console.log('hashed password', hashedPassword);
 
+
+        const verificationToken = crypto.randomBytes(32).toString('hex')
+
         const newUser = new UserModel({
             username,
             password: hashedPassword,
-            email
+            email,
+            verificationToken
         })
+
+        console.log('verivication token', verificationToken);
+        
 
         await newUser.save()
 
+        await sendVerificationEmail(email, newUser.verificationToken)
+
         res.status(201).json({
-            message: `User ${username} registered successfully`,
+            message: `User ${username} registered successfully, please check your email to verify your account`,
             data: {
                 id: newUser._id,
                 username: newUser.username,
@@ -111,10 +121,41 @@ const login = async (req, res) => {
     }
 }
 
+const verifyUser = async (req, res) => {
+    try {
+        const { token } = req.params
+
+        const user = await UserModel.findOne({ verificationToken: token })
+
+        console.log('user', user);
+        
+        if (!user) {
+            return res.status(400).json({
+                message: 'Invalid or expired token'
+            })
+        }
+
+        user.isVerified = true
+        user.verificationToken = null
+
+        await user.save()
+
+        res.status(200).json({
+            message: 'Account verified successfully'
+        })
+        
+        // res.status(200).redirect('http://localhost:5173/login')
+
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+}
+
 
 module.exports = {
     register,
-    login
+    login,
+    verifyUser
 }
 
 

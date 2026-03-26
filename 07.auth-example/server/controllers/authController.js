@@ -72,7 +72,14 @@ const login = async (req, res) => {
             })
         }
 
-        const user = await UserModel.findOne({ email: emailOrUsername }) || await UserModel.findOne({ username: emailOrUsername })
+        // const user = await UserModel.findOne({ email: emailOrUsername }) || await UserModel.findOne({ username: emailOrUsername })
+
+        const user = await UserModel.findOne({
+            $or: [
+                { email: emailOrUsername },
+                { username: emailOrUsername },
+            ]
+        })  
 
         if (!user) {
             return res.status(400).json({
@@ -89,6 +96,13 @@ const login = async (req, res) => {
             })
         }
 
+
+        if(!user.isVerified) {
+            return res.status(400).json({
+                message: 'Please verify your account before logging in',
+                success: false
+            })
+        }
 
         // const token = jwt.sign({
         //     id: user._id,
@@ -120,7 +134,6 @@ const login = async (req, res) => {
         res.status(500).json({ message: error.message })
     }
 }
-
 const verifyUser = async (req, res) => {
     try {
         const { token } = req.params

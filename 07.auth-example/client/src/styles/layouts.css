@@ -1,0 +1,96 @@
+/* Admin Layout Styles */
+.admin-layout {
+  min-height: 100vh;
+}
+
+.admin-header {
+  background: #fff;
+  padding: 0 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.admin-sidebar {
+  background: #001529;
+}
+
+.admin-content {
+  padding: 24px;
+  background: #f5f5f5;
+  min-height: calc(100vh - 64px);
+}
+
+/* Client Layout Styles */
+.client-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.client-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  width: 100%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.client-content {
+  flex: 1;
+  padding: 24px 50px;
+}
+
+.client-footer {
+  text-align: center;
+  background: #f0f2f5;
+  margin-top: auto;
+}
+
+/* Book Card Styles */
+.book-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.book-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.book-image {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+}
+
+.book-price {
+  font-size: 20px;
+  font-weight: bold;
+  color: #1890ff;
+}
+
+.book-original-price {
+  font-size: 14px;
+  color: #999;
+  text-decoration: line-through;
+  margin-left: 8px;
+}
+
+/* Discount Badge */
+.discount-badge {
+  background: #ff4d4f;
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  margin-right: 4px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .client-content {
+    padding: 16px;
+  }
+}
